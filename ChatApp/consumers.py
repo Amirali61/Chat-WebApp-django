@@ -6,7 +6,7 @@ class ChatConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
         self.send('{"type":"accept","status":"accepted"}')
-
+        ''' the type in data must be the name of receiver function in consumer '''
         # data = {
         #     "type":"receiver_function",
         #     "message":"Hey there"
