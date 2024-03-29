@@ -261,6 +261,7 @@
                 <p style="overflow-wrap: anywhere;">Message from the other</p>
             </div>
         </section>
+    </main>
 
     <footer>
         <textarea name="text" oninput="this.style.height = ''; this.style.height = this.scrollHeight +'px'" id="the-message-to-send"></textarea>
@@ -270,10 +271,22 @@
     <script>
         const url = `ws://127.0.0.1:8000/websocket/`;
         const connection = new WebSocket(url);
+        const textarea = document.getElementById('the-message-to-send');
+        const messages_area = document.getElementById('messages-area');
         const send_btn = document.getElementById('send-message-button');
-        const message = `{"type":"message","message":"Hi"}`;
         send_btn.addEventListener('click',function(){
-            connection.send(message)
+            connection.send(`{"type":"message","message":"${textarea.value}"}`)
+            messages_area.insertAdjacentHTML('beforeend',`        <section class="to">
+            <div class="details">
+                <p>2024-01-30</p>
+                <div class="status"><div></div><div></div></div>
+                <p>10:55:02</p>
+            </div>
+            <div class="message">
+                <p style="overflow-wrap: anywhere;">${textarea.value}</p>
+            </div>
+        </section>`)
+            textarea.value = ""
         });
         connection.onmessage = (event)=>{
             console.log(event.data)
