@@ -235,9 +235,9 @@
         <a href="{% url 'home' %}"><button>Back</button></a>
         <div>
             <img src="{% static 'chat/face.png' %}">
-            <p>person's name</p>
+            <p>{{person.username}}</p>
         </div>
-        <p class="name-of-sender">Me : the user's name</p>
+        <p class="name-of-sender">Me : {{me.first_name}}</p>
     </header>
 
     <main id="messages-area">

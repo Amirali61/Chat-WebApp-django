@@ -4,21 +4,30 @@ from asgiref.sync import async_to_sync
 from django.contrib.auth import login as signin 
 from django.contrib.auth import authenticate 
 from django.contrib.auth import logout as signout 
+from django.contrib.auth.models import User
 
 from .forms import RegistrationForm , LoginForm
 # Create your views here.
 def home(request):
     # request.session['test']='hi this is me'
 
-    data = {
-            "type":"receiver_function",
-            "message":"Hey there"
-        }
+    # data = {
+    #         "type":"receiver_function",
+    #         "message":"Hey there"
+    #     }
     
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)('chat_group',data)
+    # channel_layer = get_channel_layer()
+    # async_to_sync(channel_layer.group_send)('chat_group',data)
 
-    return render(request=request,template_name='chat/home.html')
+    if not request.user.is_authenticated:
+        return redirect('main')
+    else:
+        me = request.user
+        users = User.objects.all().order_by('username')
+
+
+
+        return render(request=request,template_name='chat/home.html',context={'me':me,'users':users})
 
 def login(request):
     if request.method == 'GET':
@@ -58,5 +67,10 @@ def register(request):
             return render(request, 'chat/register.html', {'form': form})
 
 
-def chat(request):
-    return render(request=request,template_name='chat/chat_person.html')
+def chat(request , id):
+    if not request.user.is_authenticated:
+        return redirect('main')
+    else:
+        person = User.objects.get(id = id)
+        me = request.user
+        return render(request=request,template_name='chat/chat_person.html',context={'person':person,'me':me})
