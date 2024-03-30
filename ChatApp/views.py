@@ -5,28 +5,16 @@ from django.contrib.auth import login as signin
 from django.contrib.auth import authenticate 
 from django.contrib.auth import logout as signout 
 from django.contrib.auth.models import User
-
+from django.db.models import Q
+from .models import Message
 from .forms import RegistrationForm , LoginForm
 # Create your views here.
 def home(request):
-    # request.session['test']='hi this is me'
-
-    # data = {
-    #         "type":"receiver_function",
-    #         "message":"Hey there"
-    #     }
-    
-    # channel_layer = get_channel_layer()
-    # async_to_sync(channel_layer.group_send)('chat_group',data)
-
     if not request.user.is_authenticated:
         return redirect('main')
     else:
         me = request.user
         users = User.objects.all().order_by('username')
-
-
-
         return render(request=request,template_name='chat/home.html',context={'me':me,'users':users})
 
 def login(request):
@@ -73,4 +61,5 @@ def chat(request , id):
     else:
         person = User.objects.get(id = id)
         me = request.user
-        return render(request=request,template_name='chat/chat_person.html',context={'person':person,'me':me})
+        messages = Message.objects.filter(Q(from_who=person,to_who=me)|Q(from_who=me,to_who=person)).order_by('date','time')
+        return render(request=request,template_name='chat/chat_person.html',context={'person':person,'me':me,'messages':messages})
