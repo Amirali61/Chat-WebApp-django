@@ -243,10 +243,15 @@
     <main id="messages-area">
         {% for message in messages %}
             {% if message.from_who == me %}
-                <section class="from">
+                <section class="to">
                     <div class="details">
                         <p>{{message.date}}</p>
+                        {% if message.has_been_seen %}
+                        <div class="status seen">
+                        {% else %}
                         <div class="status">
+                        {% endif %}
+                        
                             <div></div>
                             <div></div>
                         </div>
@@ -257,13 +262,11 @@
                     </div>
                 </section>
             {% elif message.from_who == person%}
-                <section class="to">
+                <section class="from">
                     <div class="details">
                         <p>2{{message.date}}</p>
-                        <div class="status">
                             <div></div>
                             <div></div>
-                        </div>
                         <p>{{message.time}}</p>
                     </div>
                     <div class="message">
@@ -288,8 +291,8 @@
         const messages_area = document.getElementById('messages-area');
         const send_btn = document.getElementById('send-message-button');
         send_btn.addEventListener('click',function(){
-            connection.send(`{"type":"message","message":"${textarea.value}"}`)
-            messages_area.insertAdjacentHTML('beforeend',`        <section class="from">
+            connection.send(`{"type":"new_message","message":"${textarea.value}"}`)
+            messages_area.insertAdjacentHTML('beforeend',`        <section class="to">
             <div class="details">
                 <p>2024-01-30</p>
                 <div class="status"><div></div><div></div></div>
@@ -304,9 +307,8 @@
         connection.onmessage = (event)=>{
             const received_data = JSON.parse(event.data)
 
-            if(received_data.type_of_data=="new_message"){
-
-                messages_area.insertAdjacentHTML('beforeend', `        <section class="to">
+            if(received_data.type_of_data == "new_message"){
+                messages_area.insertAdjacentHTML('beforeend', `        <section class="from">
                 <div class="details">
                     <p>2024-01-30</p>
                     <p>10:55:02</p>
@@ -314,7 +316,15 @@
                 <div class="message">
                     <p style="overflow-wrap: anywhere;">${received_data.data}</p>
                 </div>
-            </section>`)
+            </section>`);
+                connection.send(`{"type":"i_have_seen"}`);
+            }
+            else if (received_data.type_of_data == "has_been_seen") {
+                const my_messages = document.getElementsByClassName('status')
+                for (let index = 0; index < my_messages.length; index++) {
+                    my_messages[index].classList.add('seen')
+                    
+                }
             }
         };
 

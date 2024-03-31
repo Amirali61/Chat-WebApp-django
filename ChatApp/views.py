@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import logout as signout 
 from django.contrib.auth.models import User
 from django.db.models import Q
-from .models import Message
+from .models import Message , UserChannel
 from .forms import RegistrationForm , LoginForm
 # Create your views here.
 def home(request):
@@ -61,5 +61,17 @@ def chat(request , id):
     else:
         person = User.objects.get(id = id)
         me = request.user
+        user_channel_name = UserChannel.objects.get(user = person)
+        data = {
+                    "type":"receiver_function",
+                    "type_of_data":"has_been_seen"
+                }
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.send)(user_channel_name.channel_name,data)
+
+        messages_not_seen = Message.objects.filter(from_who=person,to_who=me)
+        messages_not_seen.update(has_been_seen = True)
+
+
         messages = Message.objects.filter(Q(from_who=person,to_who=me)|Q(from_who=me,to_who=person)).order_by('date','time')
         return render(request=request,template_name='chat/chat_person.html',context={'person':person,'me':me,'messages':messages})
